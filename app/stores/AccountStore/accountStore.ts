@@ -7,6 +7,7 @@ class AccountStore {
         makeAutoObservable(this);
 
         onAuthStateChanged(auth, (user) => {
+            console.log(111);
             if (user) {
                 this.setUser(user);
             } else {

@@ -1,7 +1,6 @@
 import {makeAutoObservable} from "mobx";
 import itemsGenerator from "../../helpers/itemsGenerator";
 import FoodItem from "../../types/FoodItem";
-import foodItem from "../../types/FoodItem";
 
 
 class GameStore {
@@ -15,7 +14,7 @@ class GameStore {
     readonly maxItems: number = 3.0;
     currentSpeed: number = 1;
     items: FoodItem[] = [];
-    health: number = 3;
+    health: number = this.maxHealth;
     satiety: number = 0;
     checkField?: {x: number, width: number};
     isLose: boolean = false;
@@ -24,28 +23,34 @@ class GameStore {
         this.checkField = {x, width}
     }
     restart = () => {
-        this.items = [];
+        while (this.items.length) {
+            this.items.pop();
+        }
         this.currentSpeed = 1;
         this.health = this.maxHealth;
         this.satiety = 0;
-        //this.checkField = undefined;
         this.isLose = false;
     }
     affect = (satietyEffect: number, healthEffect: number) => {
-        this.affectSatiety(satietyEffect);
-        this.affectHealth(healthEffect);
+        if (!this.isLose) {
+            this.affectSatiety(satietyEffect);
+            this.affectHealth(healthEffect);
+
+            if (this.health === 0) {
+                this.isLose = true;
+            }
+        }
     }
     affectHealth = (effect: number) => {
         if (!this.isLose) {
-            this.health = Math.max(0, Math.min(this.health + effect, this.maxHealth));
-        }
-
-        if (this.health === 0) {
-            this.isLose = true;
+            const newValue = this.health + effect;
+            this.health = Math.min(Math.max(newValue, 0), this.maxHealth);
         }
     }
     affectSatiety = (effect: number) => {
-        this.satiety += effect;
+        if (!this.isLose) {
+            this.satiety += effect;
+        }
     }
     increaseSpeed = () => {
         if (this.currentSpeed < this.maxSpeed) {
@@ -53,10 +58,9 @@ class GameStore {
         }
     }
     generateNewItem = () => {
-        this.items = [...this.items, itemsGenerator.generateItem()!];
-    }
-    replaceItem = (id: string) => {
-        this.items = [...this.items.filter((item) => item.id !== id), itemsGenerator.generateItem()!];
+        if (!this.isLose) {
+            this.items = [...this.items, itemsGenerator.generateItem()!];
+        }
     }
     removeItem = (id: string) => {
         this.items = this.items.filter((item) => item.id !== id);
@@ -97,20 +101,29 @@ class GameStore {
         return false;
     }
     processFeedTry = () => {
-        const item = this.findNearest();
+        if (!this.isLose) {
+            const item = this.findNearest();
 
-        if (item) {
-            if (this.isIntersected(item)) {
-                this.affect(item.foodItem.satietyEffect, item.foodItem.healthEffect);
-                this.removeItem(item.id);
-            } else {
-                this.affectHealth(-this.missclickEffect);
+            if (item) {
+                if (this.isIntersected(item)) {
+                    this.affect(item.foodItem.satietyEffect, item.foodItem.healthEffect);
+                    this.removeItem(item.id);
+                } else {
+                    this.affectHealth(-this.missclickEffect);
+                }
             }
         }
     }
+    itemExists = (item: FoodItem) => {
+        return this.items.includes(item);
+    }
     processFinish = (item: FoodItem) => {
-        this.affectHealth(-item.foodItem.fallDamage)
-        this.removeItem(item.id)
+        if (this.itemExists(item)) {
+            if (!this.isLose) {
+                this.affectHealth(-item.foodItem.fallDamage);
+            }
+            this.removeItem(item.id);
+        }
     }
 }
 

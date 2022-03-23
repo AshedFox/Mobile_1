@@ -26,7 +26,8 @@ const Item: FC<Props> = observer(({item, startX, endX}) => {
             duration: 2000 / currentSpeed,
             toValue: 1,
             useNativeDriver: true,
-        }).start(_ => processFinish(item))
+        }).start(_ =>
+            processFinish(item))
     }, [])
 
     const renderIcon = () => {

@@ -7,8 +7,9 @@ import ItemsList from "../components/ItemsList";
 import FeedButton from "../components/FeedButton";
 import colors from "../constants/colors";
 import useGameStore from "../stores/GameStore/useGameStore";
+import {observer} from "mobx-react-lite";
 
-const GameScreen = () => {
+const GameScreen = observer(() => {
     const {satiety, processFeedTry, increaseSpeed, isLose} = useGameStore();
     const catAnimatedValue = useRef(new Animated.Value(0)).current;
 
@@ -36,36 +37,32 @@ const GameScreen = () => {
 
     return (
         <View style={styles.container}>
-            {isLose ?
-                <ResultsModal/> :
-                <>
-                    <View style={styles.main}>
-                        <View style={styles.header}>
-                            <HealthBar/>
-                            <Satiety/>
-                        </View>
-                        <Animated.Image source={require('../assets/images/cat-food-hearts-icon1.png')} style={{
-                            ...styles.cat,
-                            ...{transform: [
-                                    {
-                                        translateY: catAnimatedValue.interpolate({
-                                            inputRange: [0, 0.5, 1], outputRange: [0, -80, 0]
-                                        })},
-                                    {
-                                        translateX: catAnimatedValue.interpolate({
-                                            inputRange: [0, 0.25, 0.75, 1],
-                                            outputRange: [0, -20, 10, 0]
-                                        })},
-                                ]}}}
-                        />
-                        <ItemsList/>
-                        <FeedButton onPress={handleFeed}/>
-                    </View>
-                </>
-            }
+            {isLose && <ResultsModal/>}
+            <View style={styles.main}>
+                <View style={styles.header}>
+                    <HealthBar/>
+                    <Satiety/>
+                </View>
+                <Animated.Image source={require('../assets/images/cat-food-hearts-icon1.png')} style={{
+                    ...styles.cat,
+                    ...{transform: [
+                            {
+                                translateY: catAnimatedValue.interpolate({
+                                    inputRange: [0, 0.5, 1], outputRange: [0, -80, 0]
+                                })},
+                            {
+                                translateX: catAnimatedValue.interpolate({
+                                    inputRange: [0, 0.25, 0.75, 1],
+                                    outputRange: [0, -20, 10, 0]
+                                })},
+                        ]}}}
+                />
+                <ItemsList/>
+                <FeedButton onPress={handleFeed}/>
+            </View>
         </View>
     );
-};
+});
 
 const styles = StyleSheet.create({
     cat: {

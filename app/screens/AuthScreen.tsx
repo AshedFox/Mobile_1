@@ -1,21 +1,22 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {Image, Pressable, SafeAreaView, StyleSheet, View} from "react-native";
 import colors from '../constants/colors';
 import {auth} from "../firebase/firebaseConfig";
 import AppText from "../components/AppText";
-import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword} from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword} from 'firebase/auth';
 import AppInput from "../components/AppInput";
 import useAccountStore from "../stores/AccountStore/useAccountStore";
-import IonIcon from "react-native-vector-icons/Ionicons";
 
 
 const AuthScreen = () => {
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
+    const {setUser} = useAccountStore();
 
     const handleLogin = async () => {
         try {
-            await signInWithEmailAndPassword(auth, email, password);
+            const res = await signInWithEmailAndPassword(auth, email, password);
+            setUser(res.user);
         } catch (e) {
             alert(e.message)
         }
@@ -23,7 +24,8 @@ const AuthScreen = () => {
 
     const handleSignUp = async () => {
         try {
-            await createUserWithEmailAndPassword(auth, email, password);
+            const res = await createUserWithEmailAndPassword(auth, email, password);
+            setUser(res.user);
         } catch (e) {
             alert(e.message)
         }

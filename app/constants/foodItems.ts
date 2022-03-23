@@ -10,7 +10,7 @@ const foodItems: FoodItemData[] = [
     },
     {
         type: "fish",
-        healthEffect: 0.5,
+        healthEffect: 0,
         fallDamage: 0.5,
         chanceCoef: 1,
         satietyEffect: 1,
@@ -19,7 +19,7 @@ const foodItems: FoodItemData[] = [
         type: "potion",
         healthEffect: 1,
         fallDamage: 0,
-        chanceCoef: 0.1,
+        chanceCoef: 0.15,
         satietyEffect: 1
     },
 ]

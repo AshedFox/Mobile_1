@@ -1,41 +1,31 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {ScrollView, StyleSheet, View} from "react-native";
+import {StyleSheet, View} from "react-native";
 import Item from "./Item";
-import FoodItemData from "../types/FoodItemData";
-import itemsGenerator from "../helpers/itemsGenerator";
 import colors from "../constants/colors";
 import {observer} from "mobx-react-lite";
 import useGameStore from "../stores/GameStore/useGameStore";
-import FoodItem from "../types/FoodItem";
-
 
 const ItemsList = observer(() => {
-    const {items, isLose, setCheckField, generateNewItem, currentSpeed, maxItems} = useGameStore();
-    const circleRef = useRef<View>(null)
-    const [intervalId, setIntervalId] = useState<NodeJS.Timer>();
+    const {items, isLose, setCheckField, generateNewItem, maxItems} = useGameStore();
+    const circleRef = useRef<View>(null);
+    const [timer, setTimer] = useState<NodeJS.Timer>();
 
     useEffect(() => {
-        if (!isLose) {
-            if (intervalId) {
-                clearInterval(intervalId);
-
-                setIntervalId(setInterval(() => {
-                    generateNewItem();
-                }, 2200 / maxItems / currentSpeed));
-            } else {
-                setTimeout(() => {
-                    setIntervalId(setInterval(() => {
-                        generateNewItem();
-                    }, 2200 / maxItems / currentSpeed));
-                }, 3000);
-            }
-
-            return () => {
-                if (intervalId) {
-                    clearInterval(intervalId);
-                }
-            }
+        if (timer) {
+            return;
         }
+
+        setTimer(setInterval(() => {
+            generateNewItem();
+        }, 2400 / maxItems));
+
+
+        return () => {
+            if (timer) {
+                clearInterval(timer);
+                setTimer(undefined);
+            }
+        };
     }, [isLose]);
 
     return (
@@ -47,9 +37,7 @@ const ItemsList = observer(() => {
                     });
                 }
             }}/>
-            {items.map((item, i) =>
-                <Item key={item.id} item={item} startX={-150} endX={150}/>
-            )}
+            {!isLose && items.map((item) => <Item key={item.id} item={item} startX={-150} endX={150}/>)}
         </View>
     );
 });
