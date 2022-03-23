@@ -35,16 +35,16 @@ class GameStore {
         if (!this.isLose) {
             this.affectSatiety(satietyEffect);
             this.affectHealth(healthEffect);
-
-            if (this.health === 0) {
-                this.isLose = true;
-            }
         }
     }
     affectHealth = (effect: number) => {
         if (!this.isLose) {
             const newValue = this.health + effect;
             this.health = Math.min(Math.max(newValue, 0), this.maxHealth);
+        }
+
+        if (this.health === 0) {
+            this.isLose = true;
         }
     }
     affectSatiety = (effect: number) => {
