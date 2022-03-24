@@ -8,9 +8,10 @@ import FeedButton from "../components/FeedButton";
 import colors from "../constants/colors";
 import useGameStore from "../stores/GameStore/useGameStore";
 import {observer} from "mobx-react-lite";
+import {GameStatus} from "../stores/GameStore/gameStore";
 
 const GameScreen = observer(() => {
-    const {satiety, processFeedTry, increaseSpeed, isLose} = useGameStore();
+    const {satiety, processFeedTry, increaseSpeed, start, gameStatus} = useGameStore();
     const catAnimatedValue = useRef(new Animated.Value(0)).current;
 
     const animateCat = () => {
@@ -26,6 +27,10 @@ const GameScreen = observer(() => {
         processFeedTry();
     }
 
+    const handleStart = () => {
+        start();
+    }
+
     useEffect(() => {
         if (satiety !== 0) {
             if (satiety % 15 === 0) {
@@ -37,7 +42,7 @@ const GameScreen = observer(() => {
 
     return (
         <View style={styles.container}>
-            {isLose && <ResultsModal/>}
+            <ResultsModal/>
             <View style={styles.main}>
                 <View style={styles.header}>
                     <HealthBar/>
@@ -58,7 +63,9 @@ const GameScreen = observer(() => {
                         ]}}}
                 />
                 <ItemsList/>
-                <FeedButton onPress={handleFeed}/>
+                <FeedButton text={gameStatus === GameStatus.IN_PROGRESS ? "FEED" : "START"}
+                            onPress={gameStatus === GameStatus.IN_PROGRESS ? handleFeed : handleStart}
+                />
             </View>
         </View>
     );

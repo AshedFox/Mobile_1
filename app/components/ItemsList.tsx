@@ -4,29 +4,35 @@ import Item from "./Item";
 import colors from "../constants/colors";
 import {observer} from "mobx-react-lite";
 import useGameStore from "../stores/GameStore/useGameStore";
+import {useNavigation} from "@react-navigation/native";
+import {GameStatus} from "../stores/GameStore/gameStore";
 
-const ItemsList = observer(() => {
-    const {items, isLose, setCheckField, generateNewItem, maxItems} = useGameStore();
+const ItemsList = observer((props) => {
+    const {items, gameStatus, currentSpeed, setCheckField, generateNewItem, maxItems} = useGameStore();
     const circleRef = useRef<View>(null);
     const [timer, setTimer] = useState<NodeJS.Timer>();
+    const navigation = useNavigation()
 
     useEffect(() => {
         if (timer) {
-            return;
+            clearInterval(timer);
         }
 
-        setTimer(setInterval(() => {
-            generateNewItem();
-        }, 2400 / maxItems));
+        if (gameStatus === GameStatus.IN_PROGRESS) {
+            setTimer(setInterval(() => {
+                if (navigation.isFocused()) {
+                    generateNewItem();
+                }
+            }, 2400 / maxItems / currentSpeed));
+        }
 
 
         return () => {
             if (timer) {
                 clearInterval(timer);
-                setTimer(undefined);
             }
         };
-    }, [isLose]);
+    }, [gameStatus, navigation.isFocused()]);
 
     return (
         <View style={styles.container}>
@@ -37,7 +43,9 @@ const ItemsList = observer(() => {
                     });
                 }
             }}/>
-            {!isLose && items.map((item) => <Item key={item.id} item={item} startX={-150} endX={150}/>)}
+            {gameStatus === GameStatus.IN_PROGRESS &&
+                items.map((item) => <Item key={item.id} item={item} startX={-150} endX={150}/>)
+            }
         </View>
     );
 });

@@ -1,11 +1,10 @@
-import MainNavigator from "./app/navigation/MainNavigator";
 import {useEffect, useState} from "react";
 import LoadingScreen from "./app/screens/LoadingScreen";
-import MainScreen from "./app/screens/MainScreen";
+import {NavigationContainer} from "@react-navigation/native";
+import StackNavigator from "./app/navigation/StackNavigator";
 
 const App = () => {
   const [isLoading, setIsLoading] = useState(true);
-
 
   useEffect(() => {
     setTimeout(() => {setIsLoading(false)}, 2000);
@@ -17,7 +16,11 @@ const App = () => {
     )
   }
 
-  return <MainScreen/>;
+  return (
+      <NavigationContainer>
+        <StackNavigator/>
+      </NavigationContainer>
+  );
 }
 
 export default App;

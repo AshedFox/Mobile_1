@@ -1,22 +1,34 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Image, Pressable, SafeAreaView, StyleSheet, View} from "react-native";
 import colors from '../constants/colors';
-import {auth} from "../firebase/firebaseConfig";
 import AppText from "../components/AppText";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword} from 'firebase/auth';
+import {createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword} from 'firebase/auth';
 import AppInput from "../components/AppInput";
-import useAccountStore from "../stores/AccountStore/useAccountStore";
+import {auth} from "../firebase/firebaseConfig";
+import {useNavigation} from "@react-navigation/native";
+import useGameStore from "../stores/GameStore/useGameStore";
 
 
 const AuthScreen = () => {
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
-    const {setUser} = useAccountStore();
+    const navigation = useNavigation();
+    const {stop} = useGameStore();
+
+    useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged((user) => {
+            if (user) {
+                // @ts-ignore
+                navigation.navigate("Main");
+            }
+        })
+
+        return () => unsubscribe();
+    }, [])
 
     const handleLogin = async () => {
         try {
-            const res = await signInWithEmailAndPassword(auth, email, password);
-            setUser(res.user);
+            await signInWithEmailAndPassword(getAuth(), email, password);
         } catch (e) {
             alert(e.message)
         }
@@ -24,8 +36,7 @@ const AuthScreen = () => {
 
     const handleSignUp = async () => {
         try {
-            const res = await createUserWithEmailAndPassword(auth, email, password);
-            setUser(res.user);
+            await createUserWithEmailAndPassword(getAuth(), email, password);
         } catch (e) {
             alert(e.message)
         }
@@ -107,7 +118,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15,
         marginBottom: 10,
         borderRadius: 3,
-        borderWidth: 2,
+        borderBottomWidth: 2,
         borderStyle: "solid",
         borderColor: colors.secondary,
     },

@@ -2,15 +2,17 @@ import React, {FC} from 'react';
 import AppText from "./AppText";
 import {Pressable, StyleSheet} from "react-native";
 import colors from "../constants/colors";
+import useGameStore from "../stores/GameStore/useGameStore";
 
 type Props = {
+    text: string,
     onPress: () => void
 }
 
-const FeedButton: FC<Props> = ({onPress}) => {
+const FeedButton: FC<Props> = ({onPress, text}) => {
     return (
         <Pressable style={styles.button} onPress={onPress}>
-            <AppText style={styles.text} variation={"light"}>FEED</AppText>
+            <AppText style={styles.text} variation={"light"}>{text}</AppText>
         </Pressable>
     );
 };

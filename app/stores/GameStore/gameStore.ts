@@ -1,7 +1,15 @@
 import {makeAutoObservable} from "mobx";
 import itemsGenerator from "../../helpers/itemsGenerator";
 import FoodItem from "../../types/FoodItem";
+import {database} from "../../firebase/firebaseConfig";
+import {ref, set, get} from "firebase/database";
+import accountStore from "../AccountStore/accountStore";
 
+export enum GameStatus {
+    NOT_STARTED = "NOT_STARTED",
+    IN_PROGRESS = "IN_PROGRESS",
+    LOST = "LOST"
+}
 
 class GameStore {
     constructor() {
@@ -9,46 +17,76 @@ class GameStore {
     }
 
     readonly missclickEffect: number = 0.5;
-    readonly maxHealth: number = 3.0;
-    readonly maxSpeed: number = 3.0;
-    readonly maxItems: number = 3.0;
+    readonly maxHealth: number = 3;
+    readonly maxSpeed: number = 3;
+    readonly maxItems: number = 3;
     currentSpeed: number = 1;
     items: FoodItem[] = [];
     health: number = this.maxHealth;
     satiety: number = 0;
     checkField?: {x: number, width: number};
-    isLose: boolean = false;
+    gameStatus: GameStatus = GameStatus.NOT_STARTED;
 
     setCheckField = (x: number, width: number) => {
         this.checkField = {x, width}
     }
-    restart = () => {
-        while (this.items.length) {
-            this.items.pop();
+    stop = () => {
+        if (this.gameStatus === GameStatus.IN_PROGRESS) {
+            while (this.items.length) {
+                this.items.pop();
+            }
+            this.currentSpeed = 1;
+            this.health = this.maxHealth;
+            this.satiety = 0;
+            this.gameStatus = GameStatus.NOT_STARTED;
         }
-        this.currentSpeed = 1;
-        this.health = this.maxHealth;
-        this.satiety = 0;
-        this.isLose = false;
+    }
+    start = () => {
+        if (this.gameStatus !== GameStatus.IN_PROGRESS) {
+            while (this.items.length) {
+                this.items.pop();
+            }
+            this.currentSpeed = 1;
+            this.health = this.maxHealth;
+            this.satiety = 0;
+            this.gameStatus = GameStatus.IN_PROGRESS;
+        }
+    }
+    processLose = async (userId?: string) => {
+        this.gameStatus = GameStatus.LOST;
+
+        if (userId) {
+            const resultsRef = ref(database, `results/${userId}/`);
+
+            const dataSnapshot = await get(resultsRef);
+            let data = [{
+                satiety: this.satiety,
+                time: Date.now()
+            }];
+            if (dataSnapshot.exists()) {
+                data = [...data, ...dataSnapshot.val()];
+            }
+            await set(resultsRef, data);
+        }
     }
     affect = (satietyEffect: number, healthEffect: number) => {
-        if (!this.isLose) {
+        if (this.gameStatus === GameStatus.IN_PROGRESS) {
             this.affectSatiety(satietyEffect);
             this.affectHealth(healthEffect);
         }
     }
     affectHealth = (effect: number) => {
-        if (!this.isLose) {
+        if (this.gameStatus === GameStatus.IN_PROGRESS) {
             const newValue = this.health + effect;
             this.health = Math.min(Math.max(newValue, 0), this.maxHealth);
         }
 
         if (this.health === 0) {
-            this.isLose = true;
+            this.processLose(accountStore.user?.uid);
         }
     }
     affectSatiety = (effect: number) => {
-        if (!this.isLose) {
+        if (this.gameStatus === GameStatus.IN_PROGRESS) {
             this.satiety += effect;
         }
     }
@@ -58,7 +96,7 @@ class GameStore {
         }
     }
     generateNewItem = () => {
-        if (!this.isLose) {
+        if (this.gameStatus === GameStatus.IN_PROGRESS) {
             this.items = [...this.items, itemsGenerator.generateItem()!];
         }
     }
@@ -101,7 +139,7 @@ class GameStore {
         return false;
     }
     processFeedTry = () => {
-        if (!this.isLose) {
+        if (this.gameStatus === GameStatus.IN_PROGRESS) {
             const item = this.findNearest();
 
             if (item) {
@@ -119,7 +157,7 @@ class GameStore {
     }
     processFinish = (item: FoodItem) => {
         if (this.itemExists(item)) {
-            if (!this.isLose) {
+            if (this.gameStatus === GameStatus.IN_PROGRESS) {
                 this.affectHealth(-item.foodItem.fallDamage);
             }
             this.removeItem(item.id);

@@ -1,28 +1,20 @@
 import {makeAutoObservable} from "mobx";
-import {onAuthStateChanged, User} from "firebase/auth";
+import {User} from "firebase/auth";
 import {auth} from "../../firebase/firebaseConfig";
 
 class AccountStore {
+    user: User | null = null;
+
     constructor() {
         makeAutoObservable(this);
 
-        onAuthStateChanged(auth, (user) => {
-            console.log(111);
-            if (user) {
-                this.setUser(user);
-            } else {
-                this.resetUser();
-            }
+        auth.onAuthStateChanged((user) => {
+            this.setUser(user);
         });
     }
 
-    user?: User;
-
-    setUser = (user: User) => {
+    setUser = (user: User | null) => {
         this.user = user;
-    }
-    resetUser = () => {
-        this.user = undefined;
     }
 }
 
