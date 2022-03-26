@@ -4,11 +4,11 @@
     "slug": "lab1",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./app/assets/images/icon.png",
+    "icon": "./app/assets/images/cat-food-hearts-icon1.png",
     "splash": {
-      "image": "./app/assets/images/splash.png",
+      "image": "./app/assets/images/cat-food-hearts-icon1.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#efefef"
     },
     "updates": {
       "fallbackToCacheTimeout": 0
@@ -21,13 +21,13 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./app/assets/images/adaptive-icon.png",
+        "foregroundImage": "./app/assets/images/cat-food-hearts-icon1.png",
         "backgroundColor": "#FFFFFF"
       },
       "package": "com.sellym.lab1"
     },
     "web": {
-      "favicon": "./app/assets/images/favicon.png"
+      "favicon": "./app/assets/images/cat-food-hearts-icon1.png"
     }
   }
 }

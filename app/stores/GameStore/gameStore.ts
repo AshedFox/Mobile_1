@@ -31,15 +31,13 @@ class GameStore {
         this.checkField = {x, width}
     }
     stop = () => {
-        if (this.gameStatus === GameStatus.IN_PROGRESS) {
-            while (this.items.length) {
-                this.items.pop();
-            }
-            this.currentSpeed = 1;
-            this.health = this.maxHealth;
-            this.satiety = 0;
-            this.gameStatus = GameStatus.NOT_STARTED;
+        while (this.items.length) {
+            this.items.pop();
         }
+        this.currentSpeed = 1;
+        this.health = this.maxHealth;
+        this.satiety = 0;
+        this.gameStatus = GameStatus.NOT_STARTED;
     }
     start = () => {
         if (this.gameStatus !== GameStatus.IN_PROGRESS) {
